@@ -1,0 +1,113 @@
+#!/bin/bash
+
+# git-create-sub-project
+# Convert an existing directory into a nested sub-project using the git pointer method
+#
+# Usage: git create-sub-project <directory> [remote_url]
+#
+# Arguments:
+#   directory  - The existing directory to convert into a nested sub-project
+#   remote_url - (Optional) The git repository URL to set as remote
+#
+# Example:
+#   git create-sub-project my-library
+#   git create-sub-project my-library git@github.com:user/shared-lib.git
+
+set -e  # Exit on error
+
+# Check arguments
+if [ $# -lt 1 ]; then
+    echo "Error: Missing required argument"
+    echo ""
+    echo "Usage: git create-sub-project <directory> [remote_url]"
+    echo ""
+    echo "Arguments:"
+    echo "  directory  - The existing directory to convert into a nested sub-project"
+    echo "  remote_url - (Optional) The git repository URL to set as remote"
+    echo ""
+    echo "Examples:"
+    echo "  git create-sub-project my-library"
+    echo "  git create-sub-project my-library git@github.com:user/shared-lib.git"
+    exit 1
+fi
+
+TARGET_DIR="$1"
+REMOTE_URL="${2:-}"  # Optional
+GIT_DIR_NAME=".git-sub-project"
+
+# Check if directory exists
+if [ ! -d "$TARGET_DIR" ]; then
+    echo "Error: Directory '$TARGET_DIR' does not exist"
+    exit 1
+fi
+
+# Check if already a git repository
+if [ -e "$TARGET_DIR/.git" ]; then
+    echo "Error: '$TARGET_DIR/.git' already exists"
+    echo "This directory appears to already be a git repository"
+    exit 1
+fi
+
+echo "→ Converting '$TARGET_DIR' to nested sub-project..."
+
+# Enter the directory
+cd "$TARGET_DIR"
+
+# Create the custom git directory
+echo "→ Creating $GIT_DIR_NAME directory..."
+mkdir "$GIT_DIR_NAME"
+
+# Create the pointer file
+echo "→ Creating .git pointer file..."
+echo "gitdir: $GIT_DIR_NAME" > .git
+
+# Initialize the repository
+echo "→ Initializing git repository..."
+git init
+
+# Set up remote if provided
+if [ -n "$REMOTE_URL" ]; then
+    echo "→ Adding remote: $REMOTE_URL"
+    git remote add origin "$REMOTE_URL"
+fi
+
+# Stage all files
+echo "→ Staging all files..."
+git add .
+
+# Get count of staged files
+STAGED_COUNT=$(git diff --cached --numstat | wc -l)
+
+echo ""
+echo "✓ Success! Nested sub-project initialized in '$TARGET_DIR'"
+echo ""
+echo "Configuration:"
+echo "  Git directory: $TARGET_DIR/$GIT_DIR_NAME"
+if [ -n "$REMOTE_URL" ]; then
+    echo "  Remote: $REMOTE_URL"
+else
+    echo "  Remote: (none - add later with 'git remote add origin <url>')"
+fi
+echo "  Staged files: $STAGED_COUNT"
+echo ""
+echo "Next steps:"
+echo "  cd $TARGET_DIR"
+echo "  git status          # Review staged files"
+echo "  git commit -m \"Initial commit\""
+if [ -n "$REMOTE_URL" ]; then
+    echo "  git push -u origin main"
+fi
+echo ""
+echo "Then commit to parent repository:"
+echo "  cd .."
+echo "  echo -e \"\\n# Nested repo git pointer (recreate locally: cd $TARGET_DIR && echo 'gitdir: $GIT_DIR_NAME' > .git)\\n$TARGET_DIR/.git\" >> .gitignore"
+echo "  git add .gitignore $TARGET_DIR/"
+echo "  git commit -m \"Add nested subproject: $TARGET_DIR\""
+echo ""
+echo "IMPORTANT - To work with the nested repository after cloning:"
+echo "  Team members need to recreate the .git pointer file (one-time setup):"
+echo "  cd $TARGET_DIR && echo \"gitdir: $GIT_DIR_NAME\" > .git"
+echo ""
+echo "Note: Git's built-in protections prevent tracking .git files directly."
+echo "The .gitignore entry includes instructions for recreating the pointer file."
+echo ""

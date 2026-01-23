@@ -1,0 +1,99 @@
+#!/bin/bash
+
+# git-clone-sub-project.sh
+# Clone a repository as a nested sub-project using the git pointer method
+#
+# Usage: ./git-clone-sub-project.sh <repo_url> <subdir> [branch]
+#
+# Arguments:
+#   repo_url - The git repository URL to clone
+#   subdir   - The subdirectory name where to clone the repo
+#   branch   - (Optional) The branch to checkout (defaults to repository's default branch)
+#
+# Example:
+#   ./git-clone-sub-project.sh git@github.com:user/shared-lib.git my-subproject main
+
+set -e  # Exit on error
+
+# Check arguments
+if [ $# -lt 2 ]; then
+    echo "Error: Missing required arguments"
+    echo ""
+    echo "Usage: $0 <repo_url> <subdir> [branch]"
+    echo ""
+    echo "Arguments:"
+    echo "  repo_url - The git repository URL to clone"
+    echo "  subdir   - The subdirectory name where to clone the repo"
+    echo "  branch   - (Optional) The branch to checkout"
+    echo ""
+    echo "Example:"
+    echo "  $0 git@github.com:user/shared-lib.git my-subproject main"
+    exit 1
+fi
+
+REPO_URL="$1"
+SUBDIR="$2"
+BRANCH="${3:-}"  # Optional, empty if not provided
+
+echo "→ Cloning repository into ${SUBDIR}..."
+
+# Clone the repository
+if [ -n "$BRANCH" ]; then
+    git clone --branch "$BRANCH" "$REPO_URL" "$SUBDIR"
+else
+    git clone "$REPO_URL" "$SUBDIR"
+fi
+
+echo "→ Converting to nested sub-project setup..."
+
+# Enter the subdirectory
+cd "$SUBDIR"
+
+# Create the custom git directory with -sub-project suffix
+GIT_DIR_NAME=".git-sub-project"
+mkdir "$GIT_DIR_NAME"
+
+echo "→ Moving .git contents to ${GIT_DIR_NAME}..."
+
+# Move all .git directory contents to the new location
+mv .git/* "$GIT_DIR_NAME/" 2>/dev/null || true
+mv .git/.* "$GIT_DIR_NAME/" 2>/dev/null || true
+
+# Remove the original .git directory
+rmdir .git
+
+echo "→ Creating .git pointer file..."
+
+# Create the pointer file
+echo "gitdir: $GIT_DIR_NAME" > .git
+
+echo "→ Verifying setup..."
+
+# Verify it works
+if git status &>/dev/null; then
+    echo "✓ Success! Nested sub-project setup complete."
+    echo ""
+    echo "Repository: $REPO_URL"
+    echo "Directory: $SUBDIR"
+    echo "Git directory: $SUBDIR/$GIT_DIR_NAME"
+    echo ""
+    echo "The nested repository is ready to use with normal git commands:"
+    echo "  cd $SUBDIR"
+    echo "  git status"
+    echo "  git log"
+    echo ""
+    echo "To commit this to the parent repository:"
+    echo "  echo -e \"\\n# Nested repo git pointer (recreate locally: cd $SUBDIR && echo 'gitdir: $GIT_DIR_NAME' > .git)\\n$SUBDIR/.git\" >> .gitignore"
+    echo "  git add .gitignore $SUBDIR/"
+    echo "  git commit -m 'Add nested subproject: $SUBDIR'"
+    echo ""
+    echo "IMPORTANT - To work with the nested repository after cloning:"
+    echo "  Team members need to recreate the .git pointer file (one-time setup):"
+    echo "  cd $SUBDIR && echo \"gitdir: $GIT_DIR_NAME\" > .git"
+    echo ""
+    echo "Note: Git's built-in protections prevent tracking .git files directly."
+    echo "The .gitignore entry includes instructions for recreating the pointer file."
+else
+    echo "✗ Error: Git setup verification failed"
+    exit 1
+fi
