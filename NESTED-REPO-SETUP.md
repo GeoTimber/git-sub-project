@@ -39,9 +39,10 @@ sudo ./install.sh
 ./install.sh ~/.local/bin
 ```
 
-This installs two commands:
+This installs three commands:
 - `git clone-sub-project` - Clone existing repos as nested sub-projects
 - `git create-sub-project` - Convert existing directories to nested sub-projects
+- `git link-sub-project` - Link sub-projects after cloning parent repo (team member setup)
 
 After installation, you can use them as **native Git commands** from anywhere!
 
@@ -176,29 +177,31 @@ git push
 
 **Team member setup after cloning:**
 ```bash
-cd my-subproject
-echo "gitdir: .git-sub-project" > .git
-cd ..
+# Link all sub-projects at once
+git link-sub-project --all
+
+# Or link a specific sub-project
+git link-sub-project my-subproject
 ```
 
 ## Team Workflow
 
 ### For Collaborators (One-Time Setup)
 
-When someone clones your parent repository, they need to create the `.git` pointer file once:
+When someone clones your parent repository, they need to link the sub-projects once:
 
 ```bash
 # Clone the parent project
 git clone git@github.com:you/parent-project.git
 cd parent-project
 
-# Create the .git pointer file (one-time setup)
-# The command is in .gitignore as a comment for reference
-cd my-subproject
-echo "gitdir: .git-sub-project" > .git
-cd ..
+# Link all sub-projects at once (recommended)
+git link-sub-project --all
 
-# Now nested repo works!
+# Or link a specific sub-project
+git link-sub-project my-subproject
+
+# Now nested repos work!
 cd my-subproject
 git status  # Works now
 git log     # See the full history
@@ -329,4 +332,5 @@ This avoids the complexity of submodules, the messy history of subtrees, and the
 
 - **[git-clone-sub-project](git-clone-sub-project)** - Native Git command to clone existing repos as nested sub-projects
 - **[git-create-sub-project](git-create-sub-project)** - Native Git command to convert existing directories to nested sub-projects
-- **[install.sh](install.sh)** - Installation script to add both commands to your PATH as native Git commands
+- **[git-link-sub-project](git-link-sub-project)** - Native Git command to link sub-projects after cloning parent repo
+- **[install.sh](install.sh)** - Installation script to add all commands to your PATH as native Git commands

@@ -1,0 +1,171 @@
+#!/bin/bash
+
+# git-link-sub-project
+# Create the .git pointer file for sub-projects after cloning parent repository
+#
+# Usage: git link-sub-project [path]
+#        git link-sub-project --all|-a
+#
+# Arguments:
+#   path  - (Optional) The directory containing .git-sub-project (defaults to current directory)
+#   --all - Recursively find and link all sub-projects
+#
+# Example:
+#   git link-sub-project                    # Link current directory
+#   git link-sub-project my-library         # Link specific directory
+#   git link-sub-project --all              # Link all sub-projects recursively
+
+set -e  # Exit on error
+
+GIT_DIR_NAME=".git-sub-project"
+
+# Show help
+show_help() {
+    echo "Usage: git link-sub-project [path]"
+    echo "       git link-sub-project --all|-a"
+    echo ""
+    echo "Create the .git pointer file for sub-projects after cloning parent repository."
+    echo ""
+    echo "Arguments:"
+    echo "  path  - The directory containing $GIT_DIR_NAME (default: current directory)"
+    echo "  --all - Recursively find and link all sub-projects"
+    echo ""
+    echo "Examples:"
+    echo "  git link-sub-project                    # Link current directory"
+    echo "  git link-sub-project my-library         # Link specific directory"
+    echo "  git link-sub-project --all              # Link all sub-projects"
+}
+
+# Link a single sub-project directory
+# Returns: 0 = linked, 1 = error, 2 = already linked
+link_subproject() {
+    local TARGET_DIR="$1"
+    local QUIET="${2:-false}"
+
+    # Normalize path (remove trailing slash)
+    TARGET_DIR="${TARGET_DIR%/}"
+
+    # Check if directory exists
+    if [ ! -d "$TARGET_DIR" ]; then
+        echo "Error: Directory '$TARGET_DIR' does not exist"
+        return 1
+    fi
+
+    # Check if .git-sub-project exists
+    if [ ! -d "$TARGET_DIR/$GIT_DIR_NAME" ]; then
+        echo "Error: No $GIT_DIR_NAME directory found in '$TARGET_DIR'"
+        return 1
+    fi
+
+    # Check state of .git
+    if [ -e "$TARGET_DIR/.git" ]; then
+        if [ -d "$TARGET_DIR/.git" ]; then
+            echo "Error: A regular git repository (.git directory) already exists in '$TARGET_DIR'"
+            return 1
+        elif [ -f "$TARGET_DIR/.git" ]; then
+            # Read existing pointer
+            EXISTING_POINTER=$(cat "$TARGET_DIR/.git")
+            EXPECTED_POINTER="gitdir: $GIT_DIR_NAME"
+
+            if [ "$EXISTING_POINTER" = "$EXPECTED_POINTER" ]; then
+                if [ "$QUIET" = "false" ]; then
+                    echo "✓ Already linked: $TARGET_DIR"
+                fi
+                return 2  # Already correct
+            else
+                echo "Error: .git pointer file exists in '$TARGET_DIR' but points to:"
+                echo "       $EXISTING_POINTER"
+                echo "       Expected: $EXPECTED_POINTER"
+                return 1
+            fi
+        fi
+    fi
+
+    # Create the pointer file
+    echo "→ Creating .git pointer file in '$TARGET_DIR'..."
+    echo "gitdir: $GIT_DIR_NAME" > "$TARGET_DIR/.git"
+
+    # Verify it works
+    if (cd "$TARGET_DIR" && git status &>/dev/null); then
+        echo "✓ Linked: $TARGET_DIR"
+        return 0
+    else
+        echo "✗ Error: Git verification failed for '$TARGET_DIR'"
+        rm -f "$TARGET_DIR/.git"  # Clean up on failure
+        return 1
+    fi
+}
+
+# Find and link all sub-projects recursively
+link_all_subprojects() {
+    local LINKED=0
+    local ALREADY_LINKED=0
+    local ERRORS=0
+
+    echo "→ Scanning for $GIT_DIR_NAME directories..."
+    echo ""
+
+    # Find all .git-sub-project directories
+    while IFS= read -r -d '' GIT_SUB_DIR; do
+        # Get the parent directory
+        PARENT_DIR=$(dirname "$GIT_SUB_DIR")
+
+        # Try to link it (suppress set -e for this call)
+        set +e
+        link_subproject "$PARENT_DIR" "false"
+        RESULT=$?
+        set -e
+
+        case $RESULT in
+            0) ((LINKED++)) ;;
+            1) ((ERRORS++)) ;;
+            2) ((ALREADY_LINKED++)) ;;
+        esac
+        echo ""
+    done < <(find . -name "$GIT_DIR_NAME" -type d -print0 2>/dev/null)
+
+    echo "Summary:"
+    echo "  Linked: $LINKED"
+    echo "  Already linked: $ALREADY_LINKED"
+    if [ $ERRORS -gt 0 ]; then
+        echo "  Errors: $ERRORS"
+    fi
+
+    if [ $LINKED -eq 0 ] && [ $ALREADY_LINKED -eq 0 ] && [ $ERRORS -eq 0 ]; then
+        echo "No $GIT_DIR_NAME directories found"
+    fi
+}
+
+# Main script logic
+
+# Check for help flag
+if [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
+    show_help
+    exit 0
+fi
+
+# Check for --all or -a flag
+if [ "$1" = "--all" ] || [ "$1" = "-a" ]; then
+    link_all_subprojects
+    exit 0
+fi
+
+# Single directory mode
+TARGET_DIR="${1:-.}"  # Default to current directory
+
+# Disable set -e for link_subproject to handle return codes
+set +e
+link_subproject "$TARGET_DIR" "false"
+RESULT=$?
+set -e
+
+if [ $RESULT -eq 0 ] || [ $RESULT -eq 2 ]; then
+    echo ""
+    echo "The sub-project is ready to use:"
+    echo "  cd $TARGET_DIR"
+    echo "  git status"
+    echo "  git log"
+    exit 0
+else
+    exit 1
+fi
