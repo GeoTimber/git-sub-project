@@ -117,9 +117,9 @@ link_all_subprojects() {
         set -e
 
         case $RESULT in
-            0) ((LINKED++)) ;;
-            1) ((ERRORS++)) ;;
-            2) ((ALREADY_LINKED++)) ;;
+            0) LINKED=$((LINKED + 1)) ;;
+            1) ERRORS=$((ERRORS + 1)) ;;
+            2) ALREADY_LINKED=$((ALREADY_LINKED + 1)) ;;
         esac
         echo ""
     done < <(find . -name "$GIT_DIR_NAME" -type d -print0 2>/dev/null)

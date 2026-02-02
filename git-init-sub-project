@@ -53,17 +53,13 @@ echo "→ Converting '$TARGET_DIR' to nested sub-project..."
 # Enter the directory
 cd "$TARGET_DIR"
 
-# Create the custom git directory
-echo "→ Creating $GIT_DIR_NAME directory..."
-mkdir "$GIT_DIR_NAME"
+# Initialize the repository with separate git directory
+# This creates .git-sub-project/ and .git pointer file automatically
+echo "→ Initializing git repository with separate git directory..."
+git init --separate-git-dir="$GIT_DIR_NAME"
 
-# Create the pointer file
-echo "→ Creating .git pointer file..."
+# Fix the pointer file to use relative path (git init uses absolute path)
 echo "gitdir: $GIT_DIR_NAME" > .git
-
-# Initialize the repository
-echo "→ Initializing git repository..."
-git init
 
 # Set up remote if provided
 if [ -n "$REMOTE_URL" ]; then
