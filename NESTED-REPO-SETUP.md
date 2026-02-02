@@ -41,7 +41,7 @@ sudo ./install.sh
 
 This installs three commands:
 - `git clone-sub-project` - Clone existing repos as nested sub-projects
-- `git create-sub-project` - Convert existing directories to nested sub-projects
+- `git init-sub-project` - Convert existing directories to nested sub-projects
 - `git link-sub-project` - Link sub-projects after cloning parent repo (team member setup)
 
 After installation, you can use them as **native Git commands** from anywhere!
@@ -81,14 +81,14 @@ git commit -m "Add nested subproject: my-library"
 
 ### Option 2: Convert an Existing Directory
 
-Use `git create-sub-project` to convert an existing directory into a nested sub-project:
+Use `git init-sub-project` to convert an existing directory into a nested sub-project:
 
 ```bash
 # Without remote (add later)
-git create-sub-project my-existing-lib
+git init-sub-project my-existing-lib
 
 # With remote URL
-git create-sub-project my-existing-lib git@github.com:user/my-lib.git
+git init-sub-project my-existing-lib git@github.com:user/my-lib.git
 ```
 
 **What it does:**
@@ -318,7 +318,7 @@ The **git sub-project approach** provides the best balance for small teams:
 
 - **Git pointer file method** creates independent repositories with `.git` pointing to `.git-sub-project/`
 - **Naming convention** uses `.git-sub-project` suffix to clearly identify nested repositories
-- **Automated setup** via `git-clone-sub-project` and `git-create-sub-project` commands
+- **Automated setup** via `git-clone-sub-project` and `git-init-sub-project` commands
 - **Track source + history** - `.git-sub-project/` and all source files are committed to parent repo
 - **Ignore .git pointer** - added to `.gitignore` with instructions for team members
 - **One command setup** for team members - create the pointer file after cloning
@@ -331,6 +331,6 @@ This avoids the complexity of submodules, the messy history of subtrees, and the
 ## Tools
 
 - **[git-clone-sub-project](git-clone-sub-project)** - Native Git command to clone existing repos as nested sub-projects
-- **[git-create-sub-project](git-create-sub-project)** - Native Git command to convert existing directories to nested sub-projects
+- **[git-init-sub-project](git-init-sub-project)** - Native Git command to convert existing directories to nested sub-projects
 - **[git-link-sub-project](git-link-sub-project)** - Native Git command to link sub-projects after cloning parent repo
 - **[install.sh](install.sh)** - Installation script to add all commands to your PATH as native Git commands

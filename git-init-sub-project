@@ -1,17 +1,17 @@
 #!/bin/bash
 
-# git-create-sub-project
+# git-init-sub-project
 # Convert an existing directory into a nested sub-project using the git pointer method
 #
-# Usage: git create-sub-project <directory> [remote_url]
+# Usage: git init-sub-project <directory> [remote_url]
 #
 # Arguments:
 #   directory  - The existing directory to convert into a nested sub-project
 #   remote_url - (Optional) The git repository URL to set as remote
 #
 # Example:
-#   git create-sub-project my-library
-#   git create-sub-project my-library git@github.com:user/shared-lib.git
+#   git init-sub-project my-library
+#   git init-sub-project my-library git@github.com:user/shared-lib.git
 
 set -e  # Exit on error
 
@@ -19,15 +19,15 @@ set -e  # Exit on error
 if [ $# -lt 1 ]; then
     echo "Error: Missing required argument"
     echo ""
-    echo "Usage: git create-sub-project <directory> [remote_url]"
+    echo "Usage: git init-sub-project <directory> [remote_url]"
     echo ""
     echo "Arguments:"
     echo "  directory  - The existing directory to convert into a nested sub-project"
     echo "  remote_url - (Optional) The git repository URL to set as remote"
     echo ""
     echo "Examples:"
-    echo "  git create-sub-project my-library"
-    echo "  git create-sub-project my-library git@github.com:user/shared-lib.git"
+    echo "  git init-sub-project my-library"
+    echo "  git init-sub-project my-library git@github.com:user/shared-lib.git"
     exit 1
 fi
 

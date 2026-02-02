@@ -29,7 +29,7 @@ sudo ./install.sh
 
 This installs three native Git commands:
 - `git clone-sub-project` - Clone existing repos as nested sub-projects
-- `git create-sub-project` - Convert existing directories to nested sub-projects
+- `git init-sub-project` - Convert existing directories to nested sub-projects
 - `git link-sub-project` - Link sub-projects after cloning parent repo (team member setup)
 
 ## Quick Start
@@ -50,7 +50,7 @@ git commit -m 'Add nested subproject: my-library'
 
 ```bash
 # Create nested sub-project
-git create-sub-project my-existing-lib git@github.com:user/my-lib.git
+git init-sub-project my-existing-lib git@github.com:user/my-lib.git
 
 # Commit the new nested repo
 cd my-existing-lib
@@ -137,7 +137,7 @@ Uses Git's pointer file feature (`.git` file pointing to custom directory):
 ## Tools
 
 - **[git-clone-sub-project](git-clone-sub-project)** - Clone repos as nested sub-projects
-- **[git-create-sub-project](git-create-sub-project)** - Convert directories to nested sub-projects
+- **[git-init-sub-project](git-init-sub-project)** - Convert directories to nested sub-projects
 - **[git-link-sub-project](git-link-sub-project)** - Link sub-projects after cloning parent repo
 - **[install.sh](install.sh)** - Installation script
 - **[NESTED-REPO-SETUP.md](NESTED-REPO-SETUP.md)** - Full documentation

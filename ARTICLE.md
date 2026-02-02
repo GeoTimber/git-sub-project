@@ -83,9 +83,9 @@ Want to edit the shared library? Go ahead. Make your changes, then when you're r
 git clone-sub-project git@github.com:team/shared-lib.git my-lib
 ```
 
-**`git create-sub-project`** - Convert an existing directory:
+**`git init-sub-project`** - Convert an existing directory:
 ```bash
-git create-sub-project my-lib git@github.com:team/my-lib.git
+git init-sub-project my-lib git@github.com:team/my-lib.git
 ```
 
 **`git link-sub-project`** - Enable git commands in nested repos (optional, for contributors):

@@ -8,7 +8,7 @@
 
 set -e  # Exit on error
 
-SCRIPTS=("git-clone-sub-project" "git-create-sub-project" "git-link-sub-project")
+SCRIPTS=("git-clone-sub-project" "git-init-sub-project" "git-link-sub-project")
 DEFAULT_INSTALL_DIR="/usr/local/bin"
 INSTALL_DIR="${1:-$DEFAULT_INSTALL_DIR}"
 
@@ -56,12 +56,12 @@ done
 echo ""
 echo "You can now use them as native Git commands:"
 echo "  git clone-sub-project <repo_url> <subdir> [branch]"
-echo "  git create-sub-project <directory> [remote_url]"
+echo "  git init-sub-project <directory> [remote_url]"
 echo "  git link-sub-project [path]"
 echo ""
 echo "Examples:"
 echo "  git clone-sub-project git@github.com:user/shared-lib.git my-library"
-echo "  git create-sub-project my-library git@github.com:user/shared-lib.git"
+echo "  git init-sub-project my-library git@github.com:user/shared-lib.git"
 echo "  git link-sub-project --all                # Link all sub-projects after cloning"
 echo ""
 
