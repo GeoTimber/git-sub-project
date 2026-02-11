@@ -3,6 +3,7 @@
 *Share code between projects with full control, without the complexity*
 
 ---
+Want to see the code now? [git-sub-project](https://github.com/GeoTimber/git-sub-project) 
 
 Git submodules: everyone forgets `--recurse-submodules`, detached HEAD nightmares, remote dependencies that break your build.
 
